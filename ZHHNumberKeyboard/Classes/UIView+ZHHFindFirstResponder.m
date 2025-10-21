@@ -15,10 +15,16 @@
     UIWindow *keyWindow = nil;
 
     // 通过 UIWindowScene 获取 keyWindow
-    for (UIWindowScene *scene in [UIApplication sharedApplication].connectedScenes) {
+    for (UIScene *scene in [UIApplication sharedApplication].connectedScenes) {
         if ([scene isKindOfClass:[UIWindowScene class]]) {
-            keyWindow = scene.windows.firstObject;
-            break;
+            UIWindowScene *windowScene = (UIWindowScene *)scene;
+            for (UIWindow *window in windowScene.windows) {
+                if (window.isKeyWindow) {
+                    keyWindow = window;
+                    break;
+                }
+            }
+            if (keyWindow) break;
         }
     }
 

@@ -19,6 +19,10 @@
 /// 绑定的第一响应者（UITextField 或 UITextView）
 @property (nonatomic, weak) UIView<UIKeyInput> *firstResponder;
 @property (nonatomic, strong) NSMutableArray<ZHHNumberKeyboardButton *> *buttons;
+/// 触觉反馈生成器
+@property (nonatomic, strong) UIImpactFeedbackGenerator *impactFeedbackGenerator;
+/// 顶部分割线视图
+@property (nonatomic, strong) UIView *topSeparatorView;
 
 @end
 
@@ -34,11 +38,20 @@
         _tintColor = [UIColor colorWithRed:6 / 255.f green:193 / 255.f blue:96 / 255.f alpha:1]; // 默认鲜绿色
         self.backgroundColor = [UIColor colorWithRed:247 / 255.f green:247 / 255.f blue:247 / 255.f alpha:1];
         
-        // 适配安全区域
-        rect.size.height += [self safeAreaInsets].bottom;
-        self.frame = rect;
+        // 默认开启声音和触觉反馈
+        _enableClickSound = YES;
+        _enableHapticFeedback = YES;
+        
+        // 默认显示顶部分割线
+        _showTopSeparator = YES;
+        _topSeparatorColor = [UIColor colorWithRed:0.78 green:0.78 blue:0.8 alpha:1.0]; // 系统默认分割线颜色
+        
+        // 初始化触觉反馈生成器
+        _impactFeedbackGenerator = [[UIImpactFeedbackGenerator alloc] initWithStyle:UIImpactFeedbackStyleLight];
+        [_impactFeedbackGenerator prepare];
         
         [self _initUI];
+        [self _initTopSeparator];
     }
     
     return self;
@@ -47,17 +60,7 @@
 /// 适配安全区域（在 `safeAreaInsetsDidChange` 里更新）
 - (void)safeAreaInsetsDidChange {
     [super safeAreaInsetsDidChange];
-    [self _adjustForSafeArea];
     [self setNeedsLayout]; // 触发重新布局
-}
-
-/// 更新键盘高度，适配安全区域
-- (void)_adjustForSafeArea {
-    if (@available(iOS 11.0, *)) {
-        CGRect rect = self.frame;
-        rect.size.height = [ZHHNumberKeyboardHelper keyboardFrame].size.height + self.safeAreaInsets.bottom;
-        self.frame = rect;
-    }
 }
 
 #pragma mark - Setter 方法
@@ -72,6 +75,16 @@
     [self _updateKeyboardLayout];
 }
 
+- (void)setShowTopSeparator:(BOOL)showTopSeparator {
+    _showTopSeparator = showTopSeparator;
+    self.topSeparatorView.hidden = !showTopSeparator;
+}
+
+- (void)setTopSeparatorColor:(UIColor *)topSeparatorColor {
+    _topSeparatorColor = topSeparatorColor;
+    self.topSeparatorView.backgroundColor = topSeparatorColor;
+}
+
 #pragma mark - 更新键盘布局
 
 - (void)_updateKeyboardLayout {
@@ -83,7 +96,13 @@
                 [button setTitle:@"X" forState:UIControlStateNormal];
             }
         } else if (button.tag == -2) { // 确定按钮
+            // 根据 tintColor 自动生成高亮颜色
+            CGFloat h, s, b, a;
+            [self.tintColor getHue:&h saturation:&s brightness:&b alpha:&a];
+            UIColor *highlightColor = [UIColor colorWithHue:h saturation:s brightness:b - 0.1f alpha:a];
+            
             [button setBackgroundColor:self.tintColor forState:UIControlStateNormal];
+            [button setBackgroundColor:highlightColor forState:UIControlStateHighlighted];
         }
     }
 }
@@ -99,6 +118,14 @@
             button.alpha = hasInput ? 1.0 : 0.7; // 透明度控制可用/不可用状态
         }
     }
+}
+
+/// 初始化顶部分割线
+- (void)_initTopSeparator {
+    self.topSeparatorView = [[UIView alloc] init];
+    self.topSeparatorView.backgroundColor = self.topSeparatorColor;
+    self.topSeparatorView.hidden = !self.showTopSeparator;
+    [self addSubview:self.topSeparatorView];
 }
 
 /// 初始化 UI
@@ -256,6 +283,10 @@
     CGFloat totalWidth = CGRectGetWidth(self.bounds);
     CGFloat totalHeight = CGRectGetHeight(self.bounds) - self.safeAreaInsets.bottom;
 
+    // 顶部分割线布局
+    CGFloat separatorHeight = 0.5; // 分割线高度（0.5 像素）
+    self.topSeparatorView.frame = CGRectMake(0, 0, totalWidth, separatorHeight);
+
     CGFloat margin = 10.f;   // 左右边距
     CGFloat spacing = 10.f;  // 按键间距
     CGFloat topMargin = 10.f; // 第一排距离顶部的间距
@@ -294,7 +325,16 @@
         if (![self.firstResponder conformsToProtocol:@protocol(UIKeyInput)]) return;
     }
 
-    [ZHHNumberKeyboardHelper playClickAudio];
+    // 播放按键音效（如果启用）
+    if (self.enableClickSound) {
+        [ZHHNumberKeyboardHelper playClickAudio];
+    }
+    
+    // 触发触觉反馈（如果启用）
+    if (self.enableHapticFeedback) {
+        [self _triggerHapticFeedback];
+    }
+    
     [self _handleInputWithKeyboardItemTag:sender.tag];
 }
 
@@ -306,6 +346,13 @@
 
 
 #pragma mark - Private Methods
+
+/// 触发触觉反馈
+- (void)_triggerHapticFeedback {
+    [self.impactFeedbackGenerator impactOccurred];
+    // 为下一次反馈做准备
+    [self.impactFeedbackGenerator prepare];
+}
 
 /// 清除 CADisplayLink，防止内存泄漏
 - (void)_cleanDisplayLink {

@@ -13,32 +13,15 @@
 + (UIEdgeInsets)safeAreaInsets {
     UIWindow *window = nil;
 
-    if (@available(iOS 15.0, *)) {
-        // ✅ iOS 15+ 通过 `UIWindowScene.windows` 获取当前 `keyWindow`
-        NSSet<UIScene *> *scenes = UIApplication.sharedApplication.connectedScenes;
-        for (UIScene *scene in scenes) {
-            if ([scene isKindOfClass:[UIWindowScene class]]) {
-                UIWindowScene *windowScene = (UIWindowScene *)scene;
-                for (UIWindow *w in windowScene.windows) {
-                    if (w.isKeyWindow) {
-                        window = w;
-                        break;
-                    }
-                }
-            }
-            if (window) break;
-        }
-    } else {
-        // ✅ iOS 13 - iOS 14 使用 `UIWindowScene.windows`
-        NSSet<UIScene *> *scenes = UIApplication.sharedApplication.connectedScenes;
-        for (UIScene *scene in scenes) {
-            if ([scene isKindOfClass:[UIWindowScene class]]) {
-                UIWindowScene *windowScene = (UIWindowScene *)scene;
-                for (UIWindow *w in windowScene.windows) {
-                    if (w.isKeyWindow) {
-                        window = w;
-                        break;
-                    }
+    // 通过 UIWindowScene 获取当前 keyWindow（适配 iOS 13.0+）
+    NSSet<UIScene *> *scenes = UIApplication.sharedApplication.connectedScenes;
+    for (UIScene *scene in scenes) {
+        if ([scene isKindOfClass:[UIWindowScene class]]) {
+            UIWindowScene *windowScene = (UIWindowScene *)scene;
+            for (UIWindow *w in windowScene.windows) {
+                if (w.isKeyWindow) {
+                    window = w;
+                    break;
                 }
             }
             if (window) break;
@@ -56,7 +39,11 @@
     
     // 高度按照宽度的 0.32 倍计算，最终高度是两倍
     CGFloat height = ((NSUInteger)(width * 0.32)) * 2;
-    return CGRectMake(0, 0, width, height+[ZHHNumberKeyboardHelper safeAreaInsets].bottom);
+    
+    // 加上底部安全区域（刘海屏适配）
+    CGFloat safeAreaBottom = [ZHHNumberKeyboardHelper safeAreaInsets].bottom;
+    
+    return CGRectMake(0, 0, width, height + safeAreaBottom);
 }
 
 /// 生成纯色 UIImage
@@ -86,62 +73,17 @@
     return image;
 }
 
-/// 生成键盘删除按钮图标
-/// @return 绘制的删除按钮 UIImage
+/// 获取键盘删除按钮图标（使用系统 SF Symbols）
+/// @return 删除按钮的 UIImage
 + (UIImage *)deleteIcon {
-    CGFloat scale = [UIScreen mainScreen].scale;
-    CGSize size = CGSizeMake(27 * scale, 20 * scale);
-    const CGFloat lineWidth = 1.1f * scale; // 这里加粗线条
-    UIGraphicsBeginImageContext(size);
+    // 使用系统 SF Symbols 图标（iOS 13.0+）
+    UIImageSymbolConfiguration *config = [UIImageSymbolConfiguration configurationWithPointSize:22 weight:UIImageSymbolWeightMedium scale:UIImageSymbolScaleMedium];
+    UIImage *image = [UIImage systemImageNamed:@"delete.backward" withConfiguration:config];
     
-    CGContextRef ctx = UIGraphicsGetCurrentContext();
-    [[UIColor blackColor] setStroke];
+    // 设置为黑色（适配深色/浅色模式）
+    image = [image imageWithTintColor:[UIColor blackColor] renderingMode:UIImageRenderingModeAlwaysOriginal];
     
-    CGContextBeginPath(ctx);
-    
-    //// Bezier Drawing
-    UIBezierPath* bezierPath = [UIBezierPath bezierPath];
-    [bezierPath moveToPoint: CGPointMake(8.5 * scale, 19.5 * scale)];
-    [bezierPath addCurveToPoint: CGPointMake(23.15 * scale, 19.5 * scale) controlPoint1: CGPointMake(11.02 * scale, 19.5 * scale) controlPoint2: CGPointMake(20.63 * scale, 19.5 * scale)];
-    [bezierPath addCurveToPoint: CGPointMake(26.5 * scale, 15.5 * scale) controlPoint1: CGPointMake(25.66 * scale, 19.5 * scale) controlPoint2: CGPointMake(26.5 * scale, 17.5 * scale)];
-    [bezierPath addCurveToPoint: CGPointMake(26.5 * scale, 4.5 * scale) controlPoint1: CGPointMake(26.5 * scale, 13.5 * scale) controlPoint2: CGPointMake(26.5 * scale, 7.5 * scale)];
-    [bezierPath addCurveToPoint: CGPointMake(23.15 * scale, 0.5 * scale) controlPoint1: CGPointMake(26.5 * scale, 1.5 * scale) controlPoint2: CGPointMake(24.82 * scale, 0.5 * scale)];
-    [bezierPath addCurveToPoint: CGPointMake(8.5 * scale, 0.5 * scale) controlPoint1: CGPointMake(21.47 * scale, 0.5 * scale) controlPoint2: CGPointMake(11.02 * scale, 0.5 * scale)];
-    [bezierPath addCurveToPoint: CGPointMake(0.5 * scale, 9.5 * scale) controlPoint1: CGPointMake(5.98 * scale, 0.5 * scale) controlPoint2: CGPointMake(0.5 * scale, 9.5 * scale)];
-    [bezierPath addCurveToPoint: CGPointMake(8.5 * scale, 19.5 * scale) controlPoint1: CGPointMake(0.5 * scale, 9.5 * scale) controlPoint2: CGPointMake(5.98 * scale, 19.5 * scale)];
-    [bezierPath closePath];
-    bezierPath.lineCapStyle = kCGLineCapRound;
-    bezierPath.lineJoinStyle = kCGLineJoinRound;
-    
-    [UIColor.blackColor setStroke];
-    bezierPath.lineWidth = lineWidth; // 加粗
-    [bezierPath stroke];
-    
-    //// Bezier 2 Drawing
-    UIBezierPath* bezier2Path = [UIBezierPath bezierPath];
-    [bezier2Path moveToPoint: CGPointMake(19.5 * scale, 6.5 * scale)];
-    [bezier2Path addLineToPoint: CGPointMake(12.5 * scale, 13.5 * scale)];
-    bezier2Path.lineCapStyle = kCGLineCapRound;
-    bezier2Path.lineJoinStyle = kCGLineJoinRound;
-    
-    [UIColor.blackColor setStroke];
-    bezier2Path.lineWidth = lineWidth; // 加粗
-    [bezier2Path stroke];
-    
-    //// Bezier 3 Drawing
-    UIBezierPath* bezier3Path = [UIBezierPath bezierPath];
-    [bezier3Path moveToPoint: CGPointMake(19.5 * scale, 13.5 * scale)];
-    [bezier3Path addLineToPoint: CGPointMake(12.5 * scale, 6.5 * scale)];
-    bezier3Path.lineCapStyle = kCGLineCapRound;
-    
-    [UIColor.blackColor setStroke];
-    bezier3Path.lineWidth = lineWidth; // 加粗
-    [bezier3Path stroke];
-
-    UIImage *image = UIGraphicsGetImageFromCurrentImageContext();
-    UIGraphicsEndImageContext();
-    
-    return [UIImage imageWithCGImage:image.CGImage scale:scale orientation:UIImageOrientationUp];
+    return image;
 }
 
 /// 获取输入视图 (UITextInput) 中当前选中的文本范围

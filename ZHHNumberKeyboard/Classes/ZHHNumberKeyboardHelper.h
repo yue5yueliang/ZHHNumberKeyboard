@@ -21,7 +21,7 @@ NS_ASSUME_NONNULL_BEGIN
 /// @param size 图片尺寸
 /// @return 生成的 UIImage
 + (UIImage *)imageWithColor:(UIColor *)color size:(CGSize)size;
-/// 生成键盘的删除按钮图标
+/// 获取键盘的删除按钮图标（使用系统 SF Symbols）
 /// @return 删除按钮的 UIImage
 + (UIImage *)deleteIcon;
 
