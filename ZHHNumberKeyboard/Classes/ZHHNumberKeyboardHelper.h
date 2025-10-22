@@ -31,6 +31,13 @@ NS_ASSUME_NONNULL_BEGIN
 + (NSRange)selectedRangeInInputView:(id<UITextInput>)inputView;
 /// 播放系统默认的输入点击音效（通常用于键盘点击）
 + (void)playClickAudio;
+
+/// 根据给定颜色生成稍暗的颜色（用于高亮状态）
+/// @param color 原始颜色
+/// @param amount 亮度减少量（0-1之间）
+/// @return 调暗后的颜色
++ (UIColor *)darkenColor:(UIColor *)color byAmount:(CGFloat)amount;
+
 @end
 
 NS_ASSUME_NONNULL_END

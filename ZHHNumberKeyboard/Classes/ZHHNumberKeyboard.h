@@ -10,6 +10,12 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+/// 按钮 Tag 定义说明：
+/// - 数字 0-9：tag = 48-57 (对应 ASCII 码)
+/// - 小数点/X：tag = 46 (ASCII 码的 '.')
+/// - 删除键：tag = 127 (ASCII 码的 DEL)
+/// - 确定按钮：tag = -2 (自定义负数标识)
+
 typedef NS_ENUM(NSUInteger, ZHHNumberKeyboardType) {
     /// 展示小数点（用于金额、浮点数等输入）
     ZHHNumberKeyboardTypeDecimal,

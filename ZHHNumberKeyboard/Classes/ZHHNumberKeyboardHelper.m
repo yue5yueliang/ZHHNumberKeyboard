@@ -113,4 +113,23 @@
 + (void)playClickAudio {
     [[UIDevice currentDevice] playInputClick];
 }
+
+/// 根据给定颜色生成稍暗的颜色（用于高亮状态）
++ (UIColor *)darkenColor:(UIColor *)color byAmount:(CGFloat)amount {
+    if (!color) return nil;
+    
+    // 限制亮度减少量在合理范围内
+    amount = MAX(0, MIN(amount, 1.0));
+    
+    // 提取 HSB 值
+    CGFloat h, s, b, a;
+    if ([color getHue:&h saturation:&s brightness:&b alpha:&a]) {
+        // 降低亮度生成高亮色
+        return [UIColor colorWithHue:h saturation:s brightness:b - amount alpha:a];
+    }
+    
+    // 如果无法提取 HSB，返回原色
+    return color;
+}
+
 @end
