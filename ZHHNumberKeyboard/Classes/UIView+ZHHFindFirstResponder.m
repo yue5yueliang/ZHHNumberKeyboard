@@ -11,7 +11,7 @@
 @implementation UIView (ZHHFindFirstResponder)
 
 /// 获取当前窗口中的第一响应者（适配 iOS 13.0+）
-+ (UIView *)zhh_firstResponder {
++ (UIView *)zhhkb_firstResponder {
     UIWindow *keyWindow = nil;
 
     // 通过 UIWindowScene 获取 keyWindow
@@ -28,17 +28,17 @@
         }
     }
 
-    return [keyWindow zhh_findFirstResponder];
+    return [keyWindow zhhkb_findFirstResponder];
 }
 
 /// 递归查找第一响应者
-- (UIView *)zhh_findFirstResponder {
+- (UIView *)zhhkb_findFirstResponder {
     if ([self isFirstResponder]) {
         return self;
     }
     
     for (UIView *view in self.subviews) {
-        UIView *responder = [view zhh_findFirstResponder];
+        UIView *responder = [view zhhkb_findFirstResponder];
         if (responder) {
             return responder;
         }

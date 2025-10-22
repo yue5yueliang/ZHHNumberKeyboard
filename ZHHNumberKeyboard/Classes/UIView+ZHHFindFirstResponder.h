@@ -15,7 +15,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /// 获取当前窗口中的第一响应者
 /// @return 当前正在响应输入的 UIView（如果存在）
-+ (nullable UIView *)zhh_firstResponder;
++ (nullable UIView *)zhhkb_firstResponder;
 
 @end
 

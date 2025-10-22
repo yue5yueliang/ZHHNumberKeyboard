@@ -494,7 +494,7 @@ static UIColor *kSeparatorColor;
 - (void)buttonTouchUpInside:(ZHHNumberKeyboardButton *)sender {
     // 获取或更新第一响应者
     if (!self.firstResponder || ![self.firstResponder isFirstResponder]) {
-        self.firstResponder = (UIView<UIKeyInput> *)[UIView zhh_firstResponder];
+        self.firstResponder = (UIView<UIKeyInput> *)[UIView zhhkb_firstResponder];
         if (!self.firstResponder) return;
         if (![self.firstResponder conformsToProtocol:@protocol(UIKeyInput)]) return;
     }
