@@ -1,5 +1,7 @@
 PODS:
-  - ZHHNumberKeyboard (0.0.1)
+  - ZHHNumberKeyboard (0.1.0):
+    - ZHHNumberKeyboard/Core (= 0.1.0)
+  - ZHHNumberKeyboard/Core (0.1.0)
 
 DEPENDENCIES:
   - ZHHNumberKeyboard (from `../`)
@@ -9,7 +11,7 @@ EXTERNAL SOURCES:
     :path: "../"
 
 SPEC CHECKSUMS:
-  ZHHNumberKeyboard: bb6335b745a1890bf4d42d100bbe58fe5b04b618
+  ZHHNumberKeyboard: 7c93c53ee9be25ceed83e69757b3c8c7c608447f
 
 PODFILE CHECKSUM: 6b7a9d09bb7e3e56fc705c39a40f95d1b8894972
 
